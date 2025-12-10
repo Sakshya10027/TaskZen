@@ -8,10 +8,11 @@ import TaskBoard from "./pages/TaskBoard";
 import TaskDetail from "./pages/TaskDetail";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import AppLoader from "./components/ui/AppLoader";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <AppLoader />;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 };
