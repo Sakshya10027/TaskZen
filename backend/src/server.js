@@ -18,9 +18,24 @@ import { startOverdueChecker } from "./jobs/overdueChecker.js";
 
 const app = express();
 
+const normalizeOrigin = (u) => {
+  try {
+    const url = new URL(u);
+    return url.origin;
+  } catch {
+    return (u || "").replace(/\/+$/, "");
+  }
+};
+
+const ORIGINS = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map(normalizeOrigin);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: ORIGINS.length ? ORIGINS : true,
     credentials: true,
   })
 );
@@ -41,7 +56,7 @@ app.use(errorHandler);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    origin: ORIGINS.length ? ORIGINS : true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
