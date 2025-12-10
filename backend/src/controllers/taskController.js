@@ -4,12 +4,12 @@ import {
   createTask,
   updateTask,
   deleteTask,
-  addCommentToTask
+  addCommentToTask,
 } from "../services/taskService.js";
 
 export const getTasks = async (req, res, next) => {
   try {
-    const tasks = await listTasks(req.query);
+    const tasks = await listTasks(req.query, req.user);
     res.json(tasks);
   } catch (err) {
     next(err);
@@ -18,7 +18,7 @@ export const getTasks = async (req, res, next) => {
 
 export const getTask = async (req, res, next) => {
   try {
-    const task = await getTaskById(req.params.id);
+    const task = await getTaskById(req.params.id, req.user);
     if (!task) return res.status(404).json({ message: "Task not found" });
     res.json(task);
   } catch (err) {
