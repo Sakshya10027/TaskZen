@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import axiosClient from "../api/axiosClient";
 import Button from "../components/ui/Button";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import {
@@ -49,34 +50,55 @@ const categories = [
 
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-const genMockData = (days) => {
-  const data = [];
+const genRealData = (tasks, days = 180) => {
+  const map = new Map();
+  const today = new Date();
   for (let i = days - 1; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    const created = rand(3, 12);
-    const completed = rand(2, 15);
-    const overdue = Math.max(0, rand(0, 3) - rand(0, 2));
-    const inProgress = Math.max(0, created - completed - overdue);
-    const pending = Math.max(0, created - completed - inProgress - overdue);
-    const prHigh = rand(1, Math.min(5, completed));
-    const prMed = rand(1, Math.min(6, completed));
-    const prLow = Math.max(0, completed - prHigh - prMed);
-    const catCounts = Object.fromEntries(
-      categories.map((c) => [c, rand(0, 6)])
-    );
-    data.push({
-      date: date.toISOString().slice(0, 10),
-      created,
-      completed,
-      overdue,
-      inProgress,
-      pending,
-      priorities: { high: prHigh, medium: prMed, low: prLow },
-      categories: catCounts,
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    map.set(key, {
+      date: key,
+      created: 0,
+      completed: 0,
+      overdue: 0,
+      inProgress: 0,
+      pending: 0,
+      priorities: { high: 0, medium: 0, low: 0 },
+      categories: {},
     });
   }
-  return data;
+
+  const toISO = (dt) => (dt ? new Date(dt).toISOString().slice(0, 10) : null);
+  const isPast = (dt) => (dt ? new Date(dt) < today : false);
+
+  tasks.forEach((t) => {
+    const createdISO = toISO(t.createdAt);
+    const completedISO = toISO(t.completedAt);
+    const dueISO = toISO(t.dueDate);
+    if (createdISO && map.has(createdISO)) {
+      const bucket = map.get(createdISO);
+      bucket.created += 1;
+      if (t.status === "in-progress") bucket.inProgress += 1;
+      if (t.status === "todo") bucket.pending += 1;
+      if (typeof t.category === "string" && t.category) {
+        bucket.categories[t.category] =
+          (bucket.categories[t.category] || 0) + 1;
+      }
+    }
+    if (completedISO && map.has(completedISO)) {
+      const bucket = map.get(completedISO);
+      bucket.completed += 1;
+      const p = t.priority || "medium";
+      if (bucket.priorities[p] !== undefined) bucket.priorities[p] += 1;
+    }
+    if (dueISO && isPast(t.dueDate) && t.status !== "done" && map.has(dueISO)) {
+      const bucket = map.get(dueISO);
+      bucket.overdue += 1;
+    }
+  });
+
+  return Array.from(map.values());
 };
 
 const formatDay = (iso) => {
@@ -92,13 +114,22 @@ export default function Analytics() {
   const [customTo, setCustomTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
+  const [hasCategories, setHasCategories] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setData(genMockData(90));
-      setLoading(false);
-    }, 800);
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const { data: tasks } = await axiosClient.get("/tasks");
+        setHasCategories(tasks.some((t) => typeof t.category === "string"));
+        setData(genRealData(tasks, 180));
+      } catch (err) {
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
   }, []);
 
   const filtered = useMemo(() => {
@@ -215,12 +246,16 @@ export default function Analytics() {
   );
 
   const categoryData = useMemo(() => {
-    const agg = Object.fromEntries(categories.map((c) => [c, 0]));
+    if (!hasCategories) return [];
+    const counts = {};
+    // When categories exist in tasks, accumulate by created date buckets
     filtered.forEach((d) => {
-      categories.forEach((c) => (agg[c] += d.categories[c] || 0));
+      Object.entries(d.categories || {}).forEach(([name, val]) => {
+        counts[name] = (counts[name] || 0) + (val || 0);
+      });
     });
-    return categories.map((c) => ({ name: c, value: agg[c] }));
-  }, [filtered]);
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [filtered, hasCategories]);
 
   const exportCSV = () => {
     if (!filtered.length) return;
@@ -553,23 +588,29 @@ export default function Analytics() {
               <div className="mb-2 text-sm font-semibold text-indigo-100">
                 Category Performance
               </div>
-              <div className="h-64">
-                <ResponsiveContainer>
-                  <BarChart data={categoryData}>
-                    <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                    <XAxis dataKey="name" stroke="#c7d2fe" />
-                    <YAxis stroke="#c7d2fe" />
-                    <RTooltip
-                      contentStyle={{
-                        background: "#0f172a",
-                        border: "1px solid #334155",
-                        color: "#e0e7ff",
-                      }}
-                    />
-                    <Bar dataKey="value" fill={ACCENT_PURPLE} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {hasCategories && categoryData.length ? (
+                <div className="h-64">
+                  <ResponsiveContainer>
+                    <BarChart data={categoryData}>
+                      <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+                      <XAxis dataKey="name" stroke="#c7d2fe" />
+                      <YAxis stroke="#c7d2fe" />
+                      <RTooltip
+                        contentStyle={{
+                          background: "#0f172a",
+                          border: "1px solid #334155",
+                          color: "#e0e7ff",
+                        }}
+                      />
+                      <Bar dataKey="value" fill={ACCENT_PURPLE} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="text-xs text-indigo-200">
+                  No categories found in your tasks.
+                </div>
+              )}
             </div>
 
             <div className="mt-4 rounded-xl bg-indigo-900/30 p-4 text-indigo-100 shadow-sm">
