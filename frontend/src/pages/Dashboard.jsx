@@ -113,13 +113,14 @@ export default function Dashboard() {
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
-          <div className="flex items-center gap-2">
+          <div className="flex items_center gap-2">
             <input
               type="date"
               value={form.dueDate}
               onChange={(e) =>
                 setForm((f) => ({ ...f, dueDate: e.target.value }))
               }
+              placeholder="set date"
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
@@ -130,6 +131,7 @@ export default function Dashboard() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, startTime: e.target.value }))
               }
+              placeholder="set start time"
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
@@ -140,6 +142,7 @@ export default function Dashboard() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, endTime: e.target.value }))
               }
+              placeholder="set end time"
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>

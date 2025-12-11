@@ -227,6 +227,7 @@ export default function TaskDetail() {
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, dueDate: e.target.value }))
               }
+              placeholder="set date"
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
             <input
@@ -235,6 +236,7 @@ export default function TaskDetail() {
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, startTime: e.target.value }))
               }
+              placeholder="set start time"
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
@@ -246,6 +248,7 @@ export default function TaskDetail() {
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, endTime: e.target.value }))
               }
+              placeholder="set end time"
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
