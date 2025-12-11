@@ -31,7 +31,9 @@ const taskSchema = new mongoose.Schema(
       enum: ["low", "medium", "high"],
       default: "medium"
     },
+    startDate: { type: Date },
     dueDate: { type: Date },
+    endDate: { type: Date },
     completedAt: { type: Date },
     overdueNotifiedAt: { type: Date },
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

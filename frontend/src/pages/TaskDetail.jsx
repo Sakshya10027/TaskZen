@@ -21,8 +21,12 @@ export default function TaskDetail() {
     description: "",
     status: "todo",
     priority: "medium",
+    startDate: "",
+    startTime: "",
     dueDate: "",
     dueTime: "",
+    endDate: "",
+    endTime: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -34,11 +38,23 @@ export default function TaskDetail() {
       description: data.description || "",
       status: data.status || "todo",
       priority: data.priority || "medium",
+      startDate: data.startDate
+        ? new Date(data.startDate).toISOString().slice(0, 10)
+        : "",
+      startTime: data.startDate
+        ? new Date(data.startDate).toISOString().slice(11, 16)
+        : "",
       dueDate: data.dueDate
         ? new Date(data.dueDate).toISOString().slice(0, 10)
         : "",
       dueTime: data.dueDate
         ? new Date(data.dueDate).toISOString().slice(11, 16)
+        : "",
+      endDate: data.endDate
+        ? new Date(data.endDate).toISOString().slice(0, 10)
+        : "",
+      endTime: data.endDate
+        ? new Date(data.endDate).toISOString().slice(11, 16)
         : "",
     });
     setLoading(false);
@@ -63,9 +79,19 @@ export default function TaskDetail() {
         description: editForm.description.trim(),
         status: editForm.status,
         priority: editForm.priority,
+        startDate: editForm.startDate
+          ? new Date(
+              `${editForm.startDate}T${editForm.startTime || "00:00"}`
+            ).toISOString()
+          : null,
         dueDate: editForm.dueDate
           ? new Date(
               `${editForm.dueDate}T${editForm.dueTime || "23:59"}`
+            ).toISOString()
+          : null,
+        endDate: editForm.endDate
+          ? new Date(
+              `${editForm.endDate}T${editForm.endTime || "23:59"}`
             ).toISOString()
           : null,
       };
@@ -202,6 +228,24 @@ export default function TaskDetail() {
           <div className="flex items-center gap-2">
             <input
               type="date"
+              value={editForm.startDate}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, startDate: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+            <input
+              type="time"
+              value={editForm.startTime}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, startTime: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
               value={editForm.dueDate}
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, dueDate: e.target.value }))
@@ -213,6 +257,24 @@ export default function TaskDetail() {
               value={editForm.dueTime}
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, dueTime: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={editForm.endDate}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, endDate: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+            <input
+              type="time"
+              value={editForm.endTime}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, endTime: e.target.value }))
               }
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />

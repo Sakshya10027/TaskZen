@@ -15,8 +15,12 @@ export default function Dashboard() {
     title: "",
     description: "",
     priority: "medium",
+    startDate: "",
+    startTime: "",
     dueDate: "",
     dueTime: "",
+    endDate: "",
+    endTime: "",
   });
   const [creating, setCreating] = useState(false);
 
@@ -33,8 +37,14 @@ export default function Dashboard() {
         title: form.title.trim(),
         description: form.description.trim() || undefined,
         priority: form.priority,
+        startDate: form.startDate
+          ? new Date(`${form.startDate}T${form.startTime || "00:00"}`).toISOString()
+          : undefined,
         dueDate: form.dueDate
           ? new Date(`${form.dueDate}T${form.dueTime || "23:59"}`).toISOString()
+          : undefined,
+        endDate: form.endDate
+          ? new Date(`${form.endDate}T${form.endTime || "23:59"}`).toISOString()
           : undefined,
       };
       const { data } = await axiosClient.post("/tasks", payload);
@@ -49,8 +59,12 @@ export default function Dashboard() {
         title: "",
         description: "",
         priority: "medium",
+        startDate: "",
+        startTime: "",
         dueDate: "",
         dueTime: "",
+        endDate: "",
+        endTime: "",
       });
     } finally {
       setCreating(false);
@@ -98,6 +112,24 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             <input
               type="date"
+              value={form.startDate}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, startDate: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+            <input
+              type="time"
+              value={form.startTime}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, startTime: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
               value={form.dueDate}
               onChange={(e) =>
                 setForm((f) => ({ ...f, dueDate: e.target.value }))
@@ -109,6 +141,24 @@ export default function Dashboard() {
               value={form.dueTime}
               onChange={(e) =>
                 setForm((f) => ({ ...f, dueTime: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={form.endDate}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, endDate: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+            <input
+              type="time"
+              value={form.endTime}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, endTime: e.target.value }))
               }
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />

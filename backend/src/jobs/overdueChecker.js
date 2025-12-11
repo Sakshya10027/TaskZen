@@ -5,15 +5,40 @@ import { getIO } from "../utils/socket.js";
 export const startOverdueChecker = () => {
   const check = async () => {
     const now = new Date();
-    // auto move tasks to in-progress when their scheduled time arrives
-    const toStart = await Task.find({
-      dueDate: { $lte: now },
+    const startByStart = await Task.find({
+      startDate: { $lte: now },
       status: "todo",
     });
-    if (toStart.length) {
+    const startByDue = await Task.find({
+      dueDate: { $lte: now },
+      status: "todo",
+      $or: [{ startDate: { $exists: false } }, { startDate: null }],
+    });
+    const toStartMap = new Map();
+    for (const t of startByStart) toStartMap.set(t._id.toString(), t);
+    for (const t of startByDue) toStartMap.set(t._id.toString(), t);
+    if (toStartMap.size) {
       const io = getIO();
-      for (const task of toStart) {
+      for (const task of toStartMap.values()) {
         task.status = "in-progress";
+        await task.save();
+        const createdId = task.createdBy?.toString();
+        const assignedId = task.assignedTo?.toString();
+        if (createdId) io.to(createdId).emit("task:updated", task);
+        if (assignedId && assignedId !== createdId)
+          io.to(assignedId).emit("task:updated", task);
+      }
+    }
+
+    const toComplete = await Task.find({
+      endDate: { $lte: now },
+      status: { $ne: "done" },
+    });
+    if (toComplete.length) {
+      const io = getIO();
+      for (const task of toComplete) {
+        task.status = "done";
+        task.completedAt = now;
         await task.save();
         const createdId = task.createdBy?.toString();
         const assignedId = task.assignedTo?.toString();
