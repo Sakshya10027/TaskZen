@@ -222,33 +222,45 @@ export default function TaskDetail() {
           </select>
           <div className="flex items-center gap-2">
             <input
-              type="date"
+              type="text"
               value={editForm.dueDate}
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, dueDate: e.target.value }))
               }
               placeholder="set date"
+              onFocus={(e) => (e.target.type = "date")}
+              onBlur={(e) => {
+                if (!e.target.value) e.target.type = "text";
+              }}
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
             <input
-              type="time"
+              type="text"
               value={editForm.startTime}
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, startTime: e.target.value }))
               }
               placeholder="set start time"
+              onFocus={(e) => (e.target.type = "time")}
+              onBlur={(e) => {
+                if (!e.target.value) e.target.type = "text";
+              }}
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
 
           <div className="flex items-center gap-2">
             <input
-              type="time"
+              type="text"
               value={editForm.endTime}
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, endTime: e.target.value }))
               }
               placeholder="set end time"
+              onFocus={(e) => (e.target.type = "time")}
+              onBlur={(e) => {
+                if (!e.target.value) e.target.type = "text";
+              }}
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
