@@ -3,7 +3,10 @@ import { getIO } from "../utils/socket.js";
 import { createNotificationForTaskEvent } from "./notificationService.js";
 import { User } from "../models/User.js";
 
-export const listTasks = async ({ status, priority, q, dueFrom, dueTo }, currentUser) => {
+export const listTasks = async (
+  { status, priority, q, dueFrom, dueTo },
+  currentUser
+) => {
   const userId = currentUser?._id?.toString();
   const clauses = [];
   if (status) clauses.push({ status });
@@ -16,7 +19,7 @@ export const listTasks = async ({ status, priority, q, dueFrom, dueTo }, current
     clauses.push({ dueDate: due });
   }
   const userScope = {
-    $or: [{ createdBy: userId }, { assignedTo: userId }]
+    $or: [{ createdBy: userId }, { assignedTo: userId }],
   };
   const filter = clauses.length ? { $and: [userScope, ...clauses] } : userScope;
   return Task.find(filter)
@@ -28,7 +31,7 @@ export const listTasks = async ({ status, priority, q, dueFrom, dueTo }, current
 export const getTaskById = async (id, currentUser) =>
   Task.findOne({
     _id: id,
-    $or: [{ createdBy: currentUser?._id }, { assignedTo: currentUser?._id }]
+    $or: [{ createdBy: currentUser?._id }, { assignedTo: currentUser?._id }],
   })
     .populate("assignedTo", "name email")
     .populate("createdBy", "name email")
@@ -36,14 +39,14 @@ export const getTaskById = async (id, currentUser) =>
 
 export const createTask = async (data, currentUser) => {
   const payload = { ...data, createdBy: currentUser._id };
-  if (!payload.startDate) payload.startDate = new Date();
   const task = await Task.create(payload);
   const io = getIO();
 
   const createdId = task.createdBy?.toString();
   const assignedId = task.assignedTo?.toString();
   if (createdId) io.to(createdId).emit("task:created", task);
-  if (assignedId && assignedId !== createdId) io.to(assignedId).emit("task:created", task);
+  if (assignedId && assignedId !== createdId)
+    io.to(assignedId).emit("task:created", task);
 
   if (task.assignedTo) {
     await createNotificationForTaskEvent({
@@ -99,7 +102,8 @@ export const updateTask = async (id, updates, currentUser) => {
   const createdId = task.createdBy?.toString();
   const assignedId = task.assignedTo?.toString();
   if (createdId) io.to(createdId).emit("task:updated", task);
-  if (assignedId && assignedId !== createdId) io.to(assignedId).emit("task:updated", task);
+  if (assignedId && assignedId !== createdId)
+    io.to(assignedId).emit("task:updated", task);
 
   if (task.assignedTo) {
     await createNotificationForTaskEvent({
@@ -120,7 +124,8 @@ export const deleteTask = async (id) => {
   const createdId = task.createdBy?.toString();
   const assignedId = task.assignedTo?.toString();
   if (createdId) io.to(createdId).emit("task:deleted", { id });
-  if (assignedId && assignedId !== createdId) io.to(assignedId).emit("task:deleted", { id });
+  if (assignedId && assignedId !== createdId)
+    io.to(assignedId).emit("task:deleted", { id });
   return task;
 };
 
@@ -147,7 +152,8 @@ export const addCommentToTask = async (id, { text }, currentUser) => {
   const createdId = populated.createdBy?.toString();
   const assignedId = populated.assignedTo?.toString();
   if (createdId) io.to(createdId).emit("task:comment_added", populated);
-  if (assignedId && assignedId !== createdId) io.to(assignedId).emit("task:comment_added", populated);
+  if (assignedId && assignedId !== createdId)
+    io.to(assignedId).emit("task:comment_added", populated);
 
   if (task.assignedTo) {
     await createNotificationForTaskEvent({

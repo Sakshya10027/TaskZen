@@ -15,7 +15,8 @@ export default function Dashboard() {
     title: "",
     description: "",
     priority: "medium",
-    endDate: "",
+    dueDate: "",
+    startTime: "",
     endTime: "",
   });
   const [creating, setCreating] = useState(false);
@@ -33,10 +34,26 @@ export default function Dashboard() {
         title: form.title.trim(),
         description: form.description.trim() || undefined,
         priority: form.priority,
-        endDate: form.endDate
-          ? new Date(`${form.endDate}T${form.endTime || "23:59"}`).toISOString()
+        dueDate: form.dueDate
+          ? new Date(`${form.dueDate}T00:00:00`).toISOString()
           : undefined,
+        startDate:
+          form.dueDate && form.startTime
+            ? new Date(`${form.dueDate}T${form.startTime}`).toISOString()
+            : undefined,
+        endDate:
+          form.dueDate && form.endTime
+            ? new Date(`${form.dueDate}T${form.endTime}`).toISOString()
+            : undefined,
       };
+      if (
+        payload.startDate &&
+        payload.endDate &&
+        new Date(payload.endDate) <= new Date(payload.startDate)
+      ) {
+        setCreating(false);
+        return;
+      }
       const { data } = await axiosClient.post("/tasks", payload);
       setTasks((prev) => {
         const exists = prev.some((t) => t._id === data._id);
@@ -49,7 +66,8 @@ export default function Dashboard() {
         title: "",
         description: "",
         priority: "medium",
-        endDate: "",
+        dueDate: "",
+        startTime: "",
         endTime: "",
       });
     } finally {
@@ -95,16 +113,27 @@ export default function Dashboard() {
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
-
           <div className="flex items-center gap-2">
             <input
               type="date"
-              value={form.endDate}
+              value={form.dueDate}
               onChange={(e) =>
-                setForm((f) => ({ ...f, endDate: e.target.value }))
+                setForm((f) => ({ ...f, dueDate: e.target.value }))
               }
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={form.startTime}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, startTime: e.target.value }))
+              }
+              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </div>
+          <div className="flex items-center gap-2">
             <input
               type="time"
               value={form.endTime}

@@ -21,7 +21,7 @@ export default function TaskDetail() {
     description: "",
     status: "todo",
     priority: "medium",
-    startDate: "",
+    dueDate: "",
     startTime: "",
     endDate: "",
     endTime: "",
@@ -36,14 +36,11 @@ export default function TaskDetail() {
       description: data.description || "",
       status: data.status || "todo",
       priority: data.priority || "medium",
-      startDate: data.startDate
-        ? new Date(data.startDate).toISOString().slice(0, 10)
+      dueDate: data.dueDate
+        ? new Date(data.dueDate).toISOString().slice(0, 10)
         : "",
       startTime: data.startDate
         ? new Date(data.startDate).toISOString().slice(11, 16)
-        : "",
-      endDate: data.endDate
-        ? new Date(data.endDate).toISOString().slice(0, 10)
         : "",
       endTime: data.endDate
         ? new Date(data.endDate).toISOString().slice(11, 16)
@@ -71,17 +68,28 @@ export default function TaskDetail() {
         description: editForm.description.trim(),
         status: editForm.status,
         priority: editForm.priority,
-        startDate: editForm.startDate
-          ? new Date(
-              `${editForm.startDate}T${editForm.startTime || "00:00"}`
-            ).toISOString()
+        dueDate: editForm.dueDate
+          ? new Date(`${editForm.dueDate}T00:00:00`).toISOString()
           : null,
-        endDate: editForm.endDate
-          ? new Date(
-              `${editForm.endDate}T${editForm.endTime || "23:59"}`
-            ).toISOString()
-          : null,
+        startDate:
+          editForm.dueDate && editForm.startTime
+            ? new Date(
+                `${editForm.dueDate}T${editForm.startTime}`
+              ).toISOString()
+            : null,
+        endDate:
+          editForm.dueDate && editForm.endTime
+            ? new Date(`${editForm.dueDate}T${editForm.endTime}`).toISOString()
+            : null,
       };
+      if (
+        updates.startDate &&
+        updates.endDate &&
+        new Date(updates.endDate) <= new Date(updates.startDate)
+      ) {
+        setSaving(false);
+        return;
+      }
       const { data } = await axiosClient.put(`/tasks/${id}`, updates);
       setTask(data);
       setTasks((prev) => prev.map((t) => (t._id === data._id ? data : t)));
@@ -215,9 +223,9 @@ export default function TaskDetail() {
           <div className="flex items-center gap-2">
             <input
               type="date"
-              value={editForm.startDate}
+              value={editForm.dueDate}
               onChange={(e) =>
-                setEditForm((f) => ({ ...f, startDate: e.target.value }))
+                setEditForm((f) => ({ ...f, dueDate: e.target.value }))
               }
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
@@ -232,14 +240,6 @@ export default function TaskDetail() {
           </div>
 
           <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={editForm.endDate}
-              onChange={(e) =>
-                setEditForm((f) => ({ ...f, endDate: e.target.value }))
-              }
-              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
-            />
             <input
               type="time"
               value={editForm.endTime}
@@ -265,11 +265,16 @@ export default function TaskDetail() {
         <div>Priority: {task.priority}</div>
         <div>Assigned to: {task.assignedTo?.name || "Unassigned"}</div>
         <div>
-          Start:{" "}
-          {task.startDate ? new Date(task.startDate).toLocaleString() : "-"}
+          Due:{" "}
+          {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "-"}
         </div>
         <div>
-          End: {task.endDate ? new Date(task.endDate).toLocaleString() : "-"}
+          Start:{" "}
+          {task.startDate ? new Date(task.startDate).toLocaleTimeString() : "-"}
+        </div>
+        <div>
+          End:{" "}
+          {task.endDate ? new Date(task.endDate).toLocaleTimeString() : "-"}
         </div>
         {timeLeft && (
           <div
