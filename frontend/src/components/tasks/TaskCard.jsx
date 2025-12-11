@@ -1,5 +1,6 @@
 import { formatDate } from "../../utils/formatDate";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import axiosClient from "../../api/axiosClient";
 
 const statusColors = {
   todo: "bg-gray-100 text-gray-700",
@@ -19,6 +20,7 @@ export default function TaskCard({ task, onClick }) {
     task.status !== "done" &&
     new Date(task.endDate) < new Date();
   const [timeLeft, setTimeLeft] = useState("");
+  const autoStarted = useRef(false);
   const statusEmoji = useMemo(() => {
     if (task.status === "done") return "✅";
     if (task.status === "in-progress") return "⏳";
@@ -57,6 +59,16 @@ export default function TaskCard({ task, onClick }) {
     const update = () => {
       const nowStarted =
         task.startDate && new Date(task.startDate) <= new Date();
+      if (nowStarted && task.status === "todo") {
+        if (!autoStarted.current) {
+          autoStarted.current = true;
+          axiosClient
+            .put(`/tasks/${task._id}`, { status: "in-progress" })
+            .catch(() => {
+              autoStarted.current = false;
+            });
+        }
+      }
       if (!task.endDate || task.status === "done" || !nowStarted) {
         setTimeLeft("");
         return;

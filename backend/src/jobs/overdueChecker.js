@@ -3,17 +3,15 @@ import { Notification } from "../models/Notification.js";
 import { getIO } from "../utils/socket.js";
 
 export const startOverdueChecker = () => {
-  const check = async () => {
+  const checkStart = async () => {
     const now = new Date();
-    const startByStart = await Task.find({
+    const toStart = await Task.find({
       startDate: { $lte: now },
       status: "todo",
     });
-    const toStartMap = new Map();
-    for (const t of startByStart) toStartMap.set(t._id.toString(), t);
-    if (toStartMap.size) {
+    if (toStart.length) {
       const io = getIO();
-      for (const task of toStartMap.values()) {
+      for (const task of toStart) {
         task.status = "in-progress";
         await task.save();
         const createdId = task.createdBy?.toString();
@@ -23,7 +21,10 @@ export const startOverdueChecker = () => {
           io.to(assignedId).emit("task:updated", task);
       }
     }
+  };
 
+  const checkEnd = async () => {
+    const now = new Date();
     const toComplete = await Task.find({
       endDate: { $lte: now },
       status: { $ne: "done" },
@@ -41,6 +42,10 @@ export const startOverdueChecker = () => {
           io.to(assignedId).emit("task:updated", task);
       }
     }
+  };
+
+  const checkOverdue = async () => {
+    const now = new Date();
     const overdue = await Task.find({
       endDate: { $lte: now },
       status: { $ne: "done" },
@@ -49,22 +54,26 @@ export const startOverdueChecker = () => {
         { overdueNotifiedAt: null },
       ],
     });
-    const io = getIO();
-    for (const task of overdue) {
-      task.overdueNotifiedAt = now;
-      await task.save();
-      if (task.assignedTo) {
-        const notif = await Notification.create({
-          user: task.assignedTo,
-          type: "task_overdue",
-          task: task._id,
-          message: `Task "${task.title}" is overdue`,
-          metadata: { priority: task.priority, endDate: task.endDate },
-        });
-        io.to(task.assignedTo.toString()).emit("notification:new", notif);
+    if (overdue.length) {
+      const io = getIO();
+      for (const task of overdue) {
+        task.overdueNotifiedAt = now;
+        await task.save();
+        if (task.assignedTo) {
+          const notif = await Notification.create({
+            user: task.assignedTo,
+            type: "task_overdue",
+            task: task._id,
+            message: `Task "${task.title}" is overdue`,
+            metadata: { priority: task.priority, endDate: task.endDate },
+          });
+          io.to(task.assignedTo.toString()).emit("notification:new", notif);
+        }
       }
     }
   };
-  // run every minute
-  setInterval(check, 60 * 1000);
+
+  setInterval(checkStart, 5 * 1000);
+  setInterval(checkEnd, 10 * 1000);
+  setInterval(checkOverdue, 60 * 1000);
 };
