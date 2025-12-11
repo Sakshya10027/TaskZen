@@ -146,7 +146,7 @@ export default function TaskDetail() {
   if (!task) return <div>Task not found</div>;
 
   return (
-    <div className="mx-auto max-w-3xl rounded-xl bg-white p-4 shadow-sm dark:bg-gray-950">
+    <div className="mx-auto max-w-3xl rounded-xl bg-white p-4 shadow-sm dark:bg-gray-950" style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items_center gap-2">
           <Button
@@ -294,9 +294,9 @@ export default function TaskDetail() {
         {timeLeft && (
           <div
             className={
-              new Date(task.endDate) < new Date() && task.status !== "done"
+              (new Date(task.endDate) < new Date() && task.status !== "done"
                 ? "text-rose-600"
-                : "text-amber-700"
+                : "text-amber-700") + " col-span-2 text-xl font-bold"
             }
           >
             {timeLeft}
