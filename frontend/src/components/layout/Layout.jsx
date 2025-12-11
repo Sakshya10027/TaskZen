@@ -25,6 +25,18 @@ export default function Layout({ children }) {
               <span>Dashboard</span>
             </NavLink>
             <NavLink
+              to="/analytics"
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 rounded-md px-3 py-1 ${
+                  isActive
+                    ? "text-indigo-600"
+                    : "text-gray-600 dark:text-gray-300"
+                }`
+              }
+            >
+              <span>Analytics</span>
+            </NavLink>
+            <NavLink
               to="/board"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 rounded-md px-3 py-1 ${
