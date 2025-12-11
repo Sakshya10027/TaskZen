@@ -30,6 +30,19 @@ export default function TaskCard({ task, onClick }) {
     return "border-l-4 border-emerald-500";
   }, [task.priority]);
 
+  const bgTint = useMemo(() => {
+    if (task.priority === "high") return "bg-rose-50 dark:bg-rose-900/10";
+    if (task.priority === "medium") return "bg-indigo-50 dark:bg-indigo-900/10";
+    return "bg-emerald-50 dark:bg-emerald-900/10";
+  }, [task.priority]);
+
+  const barColor = useMemo(() => {
+    if (overdue) return "bg-rose-500";
+    if (task.priority === "high") return "bg-rose-500";
+    if (task.priority === "medium") return "bg-indigo-500";
+    return "bg-emerald-500";
+  }, [task.priority, overdue]);
+
   const progressPercent = useMemo(() => {
     if (!task.createdAt || !task.dueDate || task.status === "done") return 0;
     const start = new Date(task.createdAt).getTime();
@@ -67,7 +80,7 @@ export default function TaskCard({ task, onClick }) {
   }, [task.dueDate, task.status]);
   return (
     <div
-      className={`group flex cursor-pointer flex-col rounded-xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-950 ${accentBorder} ${
+      className={`group flex cursor-pointer flex-col rounded-xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 ${accentBorder} ${bgTint} ${
         overdue ? "ring-1 ring-rose-300 dark:ring-rose-500" : ""
       }`}
       onClick={onClick}
@@ -92,7 +105,7 @@ export default function TaskCard({ task, onClick }) {
       )}
       <div className="mb-2 h-1 w-full overflow-hidden rounded bg-gray-100 dark:bg-gray-800">
         <div
-          className={`h-1 ${overdue ? "bg-rose-500" : "bg-indigo-500"}`}
+          className={`h-1 ${barColor}`}
           style={{ width: `${progressPercent}%` }}
         />
       </div>
