@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
@@ -27,6 +27,8 @@ export default function TaskDetail() {
     endTime: "",
   });
   const [saving, setSaving] = useState(false);
+  const startTimeRef = useRef(null);
+  const endTimeRef = useRef(null);
 
   const fetchTask = async () => {
     const { data } = await axiosClient.get(`/tasks/${id}`);
@@ -235,6 +237,7 @@ export default function TaskDetail() {
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
             <input
+              ref={startTimeRef}
               type="text"
               value={editForm.startTime}
               onChange={(e) =>
@@ -247,10 +250,23 @@ export default function TaskDetail() {
               }}
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
+            <Button
+              type="button"
+              onClick={() => {
+                if (startTimeRef.current) {
+                  startTimeRef.current.blur();
+                  startTimeRef.current.type = "text";
+                }
+              }}
+              className="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              Apply
+            </Button>
           </div>
 
           <div className="flex items-center gap-2">
             <input
+              ref={endTimeRef}
               type="text"
               value={editForm.endTime}
               onChange={(e) =>
@@ -263,6 +279,18 @@ export default function TaskDetail() {
               }}
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
+            <Button
+              type="button"
+              onClick={() => {
+                if (endTimeRef.current) {
+                  endTimeRef.current.blur();
+                  endTimeRef.current.type = "text";
+                }
+              }}
+              className="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              Apply
+            </Button>
           </div>
           <div className="md:col-span-2">
             <Button
