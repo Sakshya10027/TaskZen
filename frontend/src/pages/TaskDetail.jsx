@@ -23,8 +23,6 @@ export default function TaskDetail() {
     priority: "medium",
     startDate: "",
     startTime: "",
-    dueDate: "",
-    dueTime: "",
     endDate: "",
     endTime: "",
   });
@@ -43,12 +41,6 @@ export default function TaskDetail() {
         : "",
       startTime: data.startDate
         ? new Date(data.startDate).toISOString().slice(11, 16)
-        : "",
-      dueDate: data.dueDate
-        ? new Date(data.dueDate).toISOString().slice(0, 10)
-        : "",
-      dueTime: data.dueDate
-        ? new Date(data.dueDate).toISOString().slice(11, 16)
         : "",
       endDate: data.endDate
         ? new Date(data.endDate).toISOString().slice(0, 10)
@@ -82,11 +74,6 @@ export default function TaskDetail() {
         startDate: editForm.startDate
           ? new Date(
               `${editForm.startDate}T${editForm.startTime || "00:00"}`
-            ).toISOString()
-          : null,
-        dueDate: editForm.dueDate
-          ? new Date(
-              `${editForm.dueDate}T${editForm.dueTime || "23:59"}`
             ).toISOString()
           : null,
         endDate: editForm.endDate
@@ -123,13 +110,13 @@ export default function TaskDetail() {
 
   useEffect(() => {
     const update = () => {
-      if (!task?.dueDate || task?.status === "done") {
+      if (!task?.endDate || task?.status === "done") {
         setTimeLeft("");
         return;
       }
       const now = Date.now();
-      const due = new Date(task.dueDate).getTime();
-      let diff = due - now;
+      const end = new Date(task.endDate).getTime();
+      let diff = end - now;
       const sign = diff >= 0 ? 1 : -1;
       diff = Math.abs(diff);
       const d = Math.floor(diff / (24 * 60 * 60 * 1000));
@@ -145,7 +132,7 @@ export default function TaskDetail() {
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, [task?.dueDate, task?.status]);
+  }, [task?.endDate, task?.status]);
 
   if (loading) return <LoadingSkeleton className="h-64" />;
   if (!task) return <div>Task not found</div>;
@@ -243,24 +230,7 @@ export default function TaskDetail() {
               className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={editForm.dueDate}
-              onChange={(e) =>
-                setEditForm((f) => ({ ...f, dueDate: e.target.value }))
-              }
-              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
-            />
-            <input
-              type="time"
-              value={editForm.dueTime}
-              onChange={(e) =>
-                setEditForm((f) => ({ ...f, dueTime: e.target.value }))
-              }
-              className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </div>
+
           <div className="flex items-center gap-2">
             <input
               type="date"
@@ -295,13 +265,16 @@ export default function TaskDetail() {
         <div>Priority: {task.priority}</div>
         <div>Assigned to: {task.assignedTo?.name || "Unassigned"}</div>
         <div>
-          Due:{" "}
-          {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "-"}
+          Start:{" "}
+          {task.startDate ? new Date(task.startDate).toLocaleString() : "-"}
+        </div>
+        <div>
+          End: {task.endDate ? new Date(task.endDate).toLocaleString() : "-"}
         </div>
         {timeLeft && (
           <div
             className={
-              new Date(task.dueDate) < new Date() && task.status !== "done"
+              new Date(task.endDate) < new Date() && task.status !== "done"
                 ? "text-rose-600"
                 : "text-amber-700"
             }

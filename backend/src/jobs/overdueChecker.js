@@ -9,14 +9,8 @@ export const startOverdueChecker = () => {
       startDate: { $lte: now },
       status: "todo",
     });
-    const startByDue = await Task.find({
-      dueDate: { $lte: now },
-      status: "todo",
-      $or: [{ startDate: { $exists: false } }, { startDate: null }],
-    });
     const toStartMap = new Map();
     for (const t of startByStart) toStartMap.set(t._id.toString(), t);
-    for (const t of startByDue) toStartMap.set(t._id.toString(), t);
     if (toStartMap.size) {
       const io = getIO();
       for (const task of toStartMap.values()) {
@@ -48,7 +42,7 @@ export const startOverdueChecker = () => {
       }
     }
     const overdue = await Task.find({
-      dueDate: { $lte: now },
+      endDate: { $lte: now },
       status: { $ne: "done" },
       $or: [
         { overdueNotifiedAt: { $exists: false } },
@@ -65,7 +59,7 @@ export const startOverdueChecker = () => {
           type: "task_overdue",
           task: task._id,
           message: `Task "${task.title}" is overdue`,
-          metadata: { priority: task.priority, dueDate: task.dueDate },
+          metadata: { priority: task.priority, endDate: task.endDate },
         });
         io.to(task.assignedTo.toString()).emit("notification:new", notif);
       }

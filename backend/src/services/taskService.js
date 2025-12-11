@@ -35,7 +35,9 @@ export const getTaskById = async (id, currentUser) =>
     .populate("comments.author", "name email");
 
 export const createTask = async (data, currentUser) => {
-  const task = await Task.create({ ...data, createdBy: currentUser._id });
+  const payload = { ...data, createdBy: currentUser._id };
+  if (!payload.startDate) payload.startDate = new Date();
+  const task = await Task.create(payload);
   const io = getIO();
 
   const createdId = task.createdBy?.toString();
