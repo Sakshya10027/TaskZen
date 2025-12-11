@@ -48,6 +48,14 @@ export const createTask = async (data, currentUser) => {
   if (assignedId && assignedId !== createdId)
     io.to(assignedId).emit("task:created", task);
 
+  if (createdId) {
+    await createNotificationForTaskEvent({
+      userId: task.createdBy,
+      type: "task_created",
+      task,
+      message: `Task "${task.title}" created`,
+    });
+  }
   if (task.assignedTo) {
     await createNotificationForTaskEvent({
       userId: task.assignedTo,
@@ -105,13 +113,40 @@ export const updateTask = async (id, updates, currentUser) => {
   if (assignedId && assignedId !== createdId)
     io.to(assignedId).emit("task:updated", task);
 
-  if (task.assignedTo) {
+  if (createdId) {
+    await createNotificationForTaskEvent({
+      userId: task.createdBy,
+      type: "task_updated",
+      task,
+      message: `Task "${task.title}" has been updated`,
+    });
+  }
+  if (assignedId && assignedId !== createdId) {
     await createNotificationForTaskEvent({
       userId: task.assignedTo,
       type: "task_updated",
       task,
       message: `Task "${task.title}" has been updated`,
     });
+  }
+
+  if (completedNow) {
+    if (createdId) {
+      await createNotificationForTaskEvent({
+        userId: task.createdBy,
+        type: "task_completed",
+        task,
+        message: `Task "${task.title}" has been completed`,
+      });
+    }
+    if (assignedId && assignedId !== createdId) {
+      await createNotificationForTaskEvent({
+        userId: task.assignedTo,
+        type: "task_completed",
+        task,
+        message: `Task "${task.title}" has been completed`,
+      });
+    }
   }
   return task;
 };
@@ -126,6 +161,22 @@ export const deleteTask = async (id) => {
   if (createdId) io.to(createdId).emit("task:deleted", { id });
   if (assignedId && assignedId !== createdId)
     io.to(assignedId).emit("task:deleted", { id });
+  if (createdId) {
+    await createNotificationForTaskEvent({
+      userId: task.createdBy,
+      type: "task_deleted",
+      task,
+      message: `Task "${task.title}" has been deleted`,
+    });
+  }
+  if (assignedId && assignedId !== createdId) {
+    await createNotificationForTaskEvent({
+      userId: task.assignedTo,
+      type: "task_deleted",
+      task,
+      message: `Task "${task.title}" has been deleted`,
+    });
+  }
   return task;
 };
 

@@ -79,9 +79,19 @@ export default function NotificationBell() {
         <div className="absolute right-0 mt-2 w-72 rounded-xl border border-gray-200 bg-white p-2 text-xs shadow-lg dark:border-gray-800 dark:bg-gray-950">
           <div className="mb-1 flex items-center justify-between">
             <span className="font-semibold">Notifications</span>
-            <span className="text-[10px] text-gray-400">
-              {unreadCount ? `${unreadCount} new` : "All caught up"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-gray-400">
+                {unreadCount ? `${unreadCount} new` : "All caught up"}
+              </span>
+              <button
+                onClick={() => setOpen(false)}
+                className="rounded-md bg-gray-100 px-2 py-1 text-[10px] text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                aria-label="Close notifications"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
           </div>
           <div className="max-h-64 space-y-1 overflow-y-auto">
             {loading && (
