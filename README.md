@@ -49,7 +49,7 @@ Backend `.env`:
 ```
 PORT=5000
 CLIENT_URL=http://localhost:5173
-MONGODB_URI=mongodb://localhost:27017/taskzen
+MONGO_URI=mongodb://localhost:27017/taskzen
 JWT_ACCESS_SECRET=replace-with-strong-secret
 JWT_REFRESH_SECRET=replace-with-strong-secret
 JWT_ACCESS_EXPIRES_IN=15m
@@ -125,6 +125,41 @@ Socket.IO connects with `auth.token` (JWT access token).
 - Avatar not updating: ensure frontend uses `VITE_API_URL` and backend serves `/uploads` statics; avatar path may be prefixed with backend base URL
 - 401s on API: confirm tokens are set in localStorage; refresh endpoint handles expiry
 - Socket not connected: verify access token is valid and server URL matches `VITE_API_URL`
+
+## Deployment
+
+### Render (Backend)
+- Root Directory: `backend`
+- Build: `npm install`
+- Start: `npm start`
+- Environment Variables:
+  - `MONGO_URI` = your Atlas URI (include a DB name), e.g. `mongodb+srv://.../taskzen?appName=Cluster0`
+  - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
+  - `JWT_ACCESS_EXPIRES_IN` = `15m`, `JWT_REFRESH_EXPIRES_IN` = `7d`
+  - `GOOGLE_CLIENT_ID` = your Google client ID
+  - `CLIENT_URL` = your Vercel domain origin, e.g. `https://your-project.vercel.app`
+- Health Check Path: `/`
+- Avatars: add a persistent Disk and mount `uploads` (e.g. `/opt/render/project/src/uploads`).
+
+### Vercel (Frontend)
+- Root Directory: `frontend`
+- Build: `npm run build`
+- Output: `dist`
+- Environment Variables:
+  - `VITE_API_URL` = your Render backend URL
+  - `VITE_GOOGLE_CLIENT_ID` = your Google client ID
+
+### Wiring
+- Set `CLIENT_URL` on Render to the Vercel origin (no path, no trailing slash).
+- Set `VITE_API_URL` on Vercel to the Render backend URL.
+- Add both origins to Google Cloud Console Authorized JavaScript origins.
+
+## Production Notes
+- CORS: only use origins (scheme + host). Do not include paths like `/login`.
+- Task privacy: API returns tasks where you are `createdBy` or `assignedTo`; others are hidden.
+- Sockets: server emits task events to user rooms, not globally.
+- Mobile UX: a bottom navigation is shown on small screens.
+- Startup loader: full-screen loader displays while auth initializes.
 
 ## License
 MIT
