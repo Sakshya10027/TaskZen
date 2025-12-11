@@ -9,6 +9,7 @@ import TaskDetail from "./pages/TaskDetail";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AppLoader from "./components/ui/AppLoader";
+import Analytics from "./pages/Analytics";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -47,6 +48,16 @@ export default function AppRouter() {
             <PrivateRoute>
               <Layout>
                 <Profile />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Analytics />
               </Layout>
             </PrivateRoute>
           }

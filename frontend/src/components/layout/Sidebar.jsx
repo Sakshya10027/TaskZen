@@ -33,6 +33,18 @@ export default function Sidebar() {
           Kanban Board
         </NavLink>
         <NavLink
+          to="/analytics"
+          className={({ isActive }) =>
+            `rounded-lg px-3 py-2 ${
+              isActive
+                ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200"
+                : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+            }`
+          }
+        >
+          Analytics
+        </NavLink>
+        <NavLink
           to="/profile"
           className={({ isActive }) =>
             `rounded-lg px-3 py-2 ${
