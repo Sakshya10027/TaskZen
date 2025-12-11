@@ -15,9 +15,9 @@ const priorityColors = {
 
 export default function TaskCard({ task, onClick }) {
   const overdue =
-    task.dueDate &&
+    task.endDate &&
     task.status !== "done" &&
-    new Date(task.dueDate) < new Date();
+    new Date(task.endDate) < new Date();
   const [timeLeft, setTimeLeft] = useState("");
   const statusEmoji = useMemo(() => {
     if (task.status === "done") return "✅";
@@ -44,24 +44,26 @@ export default function TaskCard({ task, onClick }) {
   }, [task.priority, overdue]);
 
   const progressPercent = useMemo(() => {
-    if (!task.createdAt || !task.dueDate || task.status === "done") return 0;
-    const start = new Date(task.createdAt).getTime();
-    const end = new Date(task.dueDate).getTime();
+    if (!task.startDate || !task.endDate || task.status === "done") return 0;
+    const start = new Date(task.startDate).getTime();
+    const end = new Date(task.endDate).getTime();
     const now = Date.now();
     if (end <= start) return 100;
     const p = ((now - start) / (end - start)) * 100;
     return Math.max(0, Math.min(100, Math.round(p)));
-  }, [task.createdAt, task.dueDate, task.status]);
+  }, [task.startDate, task.endDate, task.status]);
 
   useEffect(() => {
     const update = () => {
-      if (!task.dueDate || task.status === "done") {
+      const nowStarted =
+        task.startDate && new Date(task.startDate) <= new Date();
+      if (!task.endDate || task.status === "done" || !nowStarted) {
         setTimeLeft("");
         return;
       }
       const now = Date.now();
-      const due = new Date(task.dueDate).getTime();
-      let diff = due - now;
+      const end = new Date(task.endDate).getTime();
+      let diff = end - now;
       const sign = diff >= 0 ? 1 : -1;
       diff = Math.abs(diff);
       const d = Math.floor(diff / (24 * 60 * 60 * 1000));
@@ -77,7 +79,7 @@ export default function TaskCard({ task, onClick }) {
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, [task.dueDate, task.status]);
+  }, [task.startDate, task.endDate, task.status]);
   return (
     <div
       className={`group flex cursor-pointer flex-col rounded-xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 ${accentBorder} ${bgTint} ${
